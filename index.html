@@ -1110,6 +1110,15 @@
           judulL.textContent = judul;
           teksL.textContent = d.penjelasan || "Informasi lebih lanjut dapat ditanyakan ke admin kami.";
 
+          // Tampilkan popup-nya DULU, baru siapkan galeri di bawah ini. Kalau urutannya dibalik,
+          // posisi geser awal (scrollLeft=0) diatur saat popup masih tersembunyi (belum punya ukuran),
+          // sehingga browser gagal menaruh galeri di foto pertama — akibatnya harus digeser ke kiri
+          // dulu baru bisa digeser ke kanan. Ini kenapa khususnya kelihatan di layanan yang fotonya
+          // lebih dari satu (mis. KIA, Laboratorium).
+          pemicuL = sumber || null;
+          modalL.classList.remove("hidden");
+          document.body.classList.add("modal-open");
+
           // Terima baik foto berupa daftar (disarankan) maupun satu teks saja (untuk jaga-jaga)
           const daftarFoto = Array.isArray(d.foto) ? d.foto.filter(Boolean) : (d.foto ? [d.foto] : []);
 
@@ -1147,8 +1156,13 @@
             dotsL.classList.toggle("flex", lebihDariSatu);
 
             dotsL.innerHTML = daftarFoto.map(() => `<span class="h-1.5 w-1.5 rounded-full bg-white/60"></span>`).join("");
-            trackL.scrollLeft = 0;
-            perbaruiTitik();
+
+            // Diatur lewat requestAnimationFrame supaya posisi "mulai dari foto pertama" dihitung
+            // SETELAH popup selesai ditampilkan dan galerinya sudah punya ukuran yang benar.
+            requestAnimationFrame(() => {
+              trackL.scrollLeft = 0;
+              perbaruiTitik();
+            });
 
             // Dipasang ulang tiap buka (bukan ditumpuk) supaya tidak dobel-dobel event
             prevL.onclick = () => gesekeFoto(fotoAktif() - 1);
@@ -1160,10 +1174,6 @@
               requestAnimationFrame(() => { perbaruiTitik(); tunda = false; });
             };
           }
-
-          pemicuL = sumber || null;
-          modalL.classList.remove("hidden");
-          document.body.classList.add("modal-open");
         }
         function tutupModalLayanan() {
           modalL.classList.add("hidden");
