@@ -1175,7 +1175,7 @@
         document.querySelectorAll("[data-layanan]").forEach(btn =>
           btn.addEventListener("click", () => bukaModalLayanan(+btn.dataset.layanan, btn)));
         modalL.addEventListener("click", e => {
-          if (e.target.closest("[data-tutup-layanan]")) tutupModalLayanan();
+          if (e.target.closest("button[data-tutup-layanan]") || e.target.hasAttribute("data-tutup-layanan")) tutupModalLayanan();
         });
         document.addEventListener("keydown", e => {
           if (e.key === "Escape" && !modalL.classList.contains("hidden")) tutupModalLayanan();
