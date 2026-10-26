@@ -17,10 +17,23 @@
     window.KLINIK = {
  
       /* ================= IDENTITAS ================= */
-      // Kata pertama tampil hitam, sisanya hijau (navbar & footer).
+      // Kata pertama tampil hitam, sisanya berwarna (navbar & footer).
       NAMA_KLINIK: "Klinik Contoh",
       // Foto besar di atas. Nama file (satu folder dengan file HTML ini) atau link gambar.
       FOTO_HERO: "watermarked_img_10613167764602495183.jpg",
+
+      /* ================= WARNA WEBSITE =================
+         GANTI WARNA CUKUP DI SINI. Tulis kode warna hex (contoh: "#0d9488").
+         Semua tingkat terang/gelapnya dibuat otomatis, jadi cukup isi 2 warna.
+         Tips: cari "color picker" di Google untuk mengambil kode hex.
+         Contoh pilihan:
+           Hijau tosca (bawaan) : utama "#0d9488"  aksen "#0891b2"
+           Biru                 : utama "#2563eb"  aksen "#0ea5e9"
+           Ungu                 : utama "#7c3aed"  aksen "#db2777"
+           Hijau                : utama "#16a34a"  aksen "#0d9488"
+           Merah muda           : utama "#db2777"  aksen "#f97316"      */
+      WARNA_UTAMA: "#0d9488",   // warna utama: tombol, judul kecil, logo
+      WARNA_AKSEN: "#0891b2",   // warna pendamping: kartu selang-seling & gradasi
  
       /* ================= WHATSAPP & KONTAK ================= */
       // Boleh ditulis 0877xxxx atau 62877xxxx, otomatis dirapikan.
@@ -173,12 +186,41 @@
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    // Palet warna dibuat otomatis dari WARNA_UTAMA & WARNA_AKSEN di pengaturan atas.
+    // (Bagian ini tidak perlu diubah.)
+    (function () {
+      const K = window.KLINIK || {};
+      const hexValid = h => /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(h || "").trim());
+      const rgb = h => {
+        h = String(h).trim().replace("#", "");
+        if (h.length === 3) h = h.split("").map(c => c + c).join("");
+        const n = parseInt(h, 16);
+        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      };
+      const campur = (c, target, p) => "#" + c.map(v => Math.round(v + (target - v) * p).toString(16).padStart(2, "0")).join("");
+      const palet = hex => {
+        const c = rgb(hex);
+        return {
+          50: campur(c, 255, .94), 100: campur(c, 255, .86), 200: campur(c, 255, .70),
+          300: campur(c, 255, .52), 400: campur(c, 255, .30), 500: campur(c, 255, .14),
+          600: campur(c, 0, 0),
+          700: campur(c, 0, .15), 800: campur(c, 0, .30), 900: campur(c, 0, .45)
+        };
+      };
+      const utama = hexValid(K.WARNA_UTAMA) ? (K.WARNA_UTAMA.charAt(0) === "#" ? K.WARNA_UTAMA : "#" + K.WARNA_UTAMA) : "#0d9488";
+      const aksen = hexValid(K.WARNA_AKSEN) ? (K.WARNA_AKSEN.charAt(0) === "#" ? K.WARNA_AKSEN : "#" + K.WARNA_AKSEN) : "#0891b2";
+      document.documentElement.style.setProperty("--c-utama", utama);
+      document.documentElement.style.setProperty("--c-aksen", aksen);
+      window.__PALET = { brand: palet(utama), accent: palet(aksen) };
+    })();
+
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
           colors: {
-            brand: { 50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e', 800: '#115e59', 900: '#134e4a' }
+            brand: window.__PALET.brand,
+            accent: window.__PALET.accent
           }
         }
       }
@@ -216,7 +258,7 @@
     .floaty { animation: floaty 4s ease-in-out infinite; }
     .floaty-delay { animation: floaty 5s ease-in-out infinite; animation-delay: 1.2s; }
     .text-gradient {
-      background: linear-gradient(90deg, #0d9488, #06b6d4);
+      background: linear-gradient(90deg, var(--c-utama, #0d9488), var(--c-aksen, #0891b2));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -260,10 +302,11 @@
   <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-white/60 shadow-sm">
     <nav class="wrap h-16 flex items-center justify-between">
       <a href="#beranda" class="flex items-center gap-2">
-        <span class="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 text-white flex items-center justify-center shadow-lg shadow-brand-500/30">
+        <span class="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white flex items-center justify-center shadow-lg shadow-brand-500/30">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
         </span>
-        <span class="text-base sm:text-lg font-bold text-slate-800 leading-tight" data-nama data-warna="text-brand-600">Klinik<span class="text-brand-600"> Pramata Nani Medika</span></span>
+        <!-- Nama diisi otomatis dari pengaturan (sengaja dikosongkan supaya tidak ada nama lama yang berkedip) -->
+        <span class="text-base sm:text-lg font-bold text-slate-800 leading-tight" data-nama data-warna="text-brand-600"></span>
       </a>
  
       <ul class="hidden md:flex items-center gap-8 text-sm font-medium">
@@ -302,7 +345,7 @@
     <!-- ================= HERO ================= -->
     <section id="beranda" class="relative section overflow-hidden !py-10 md:!py-24">
       <div class="absolute -top-24 -left-24 w-96 h-96 bg-brand-200/50 rounded-full blur-3xl"></div>
-      <div class="absolute top-40 -right-24 w-96 h-96 bg-cyan-200/50 rounded-full blur-3xl"></div>
+      <div class="absolute top-40 -right-24 w-96 h-96 bg-accent-200/50 rounded-full blur-3xl"></div>
  
       <div class="wrap relative grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <!-- Teks -->
@@ -310,7 +353,7 @@
           <!-- Badge status buka/tutup (otomatis) -->
           <span class="inline-flex items-center gap-2 bg-white shadow-sm border border-brand-100 text-brand-700 text-xs font-semibold px-3.5 py-1.5 rounded-full">
             <span id="statusDot" class="w-2 h-2 rounded-full bg-brand-500"></span>
-            <span id="statusText">Buka setiap hari 08.00 – 20.00</span>
+            <span id="statusText">&nbsp;</span>
           </span>
           <h1 class="mt-4 md:mt-5 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.1] tracking-tight">
             Kesehatan Anda, <span class="text-gradient">Prioritas Kami.</span>
@@ -335,9 +378,9 @@
  
         <!-- Gambar -->
         <div data-aos="fade-up" data-aos-delay="150">
-          <div class="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-brand-900/10 ring-8 ring-white bg-gradient-to-br from-brand-100 to-cyan-100 aspect-[4/3] md:aspect-square">
-            <img id="fotoHero" src="watermarked_img_17200273929259396407.jpg"
-                 alt="Klinik Pramata Nani Medika" class="w-full h-full object-cover" loading="eager">
+          <div class="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-brand-900/10 ring-8 ring-white bg-gradient-to-br from-brand-100 to-accent-100 aspect-[4/3] md:aspect-square">
+            <!-- src & alt diisi otomatis dari FOTO_HERO (sengaja kosong supaya foto lama tidak sempat muncul) -->
+            <img id="fotoHero" alt="" class="w-full h-full object-cover" loading="eager">
  
             <!-- Badge 1 -->
             <div class="floaty absolute left-3 bottom-3 sm:left-4 sm:bottom-4 bg-white/90 backdrop-blur rounded-2xl shadow-xl px-3 py-2 sm:px-4 sm:py-3 flex items-center gap-3">
@@ -388,12 +431,12 @@
 
             <!-- Poli Gigi -->
             <button type="button" data-layanan="1" class="item group bg-white rounded-2xl p-6 border border-slate-100 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left w-full cursor-pointer">
-              <div class="w-14 h-14 rounded-2xl bg-cyan-50 text-cyan-600 group-hover:bg-cyan-600 group-hover:text-white flex items-center justify-center transition-colors duration-300">
+              <div class="w-14 h-14 rounded-2xl bg-accent-50 text-accent-600 group-hover:bg-accent-600 group-hover:text-white flex items-center justify-center transition-colors duration-300">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M7 3C4.5 3 3 5 3 7.5c0 3 1.5 4 2 7 .4 2.500 1 6.500 2.500 6.500S9 17 12 17s3 4.500 4.500 4.500S18.600 17 19 14.500c.5-3 2-4 2-7C21 5 19.500 3 17 3c-2 0-3 1-5 1S9 3 7 3z"/></svg>
               </div>
               <h3 class="mt-4 text-lg font-semibold text-slate-900">Poli Gigi</h3>
               <p class="mt-2 text-sm text-slate-500 leading-relaxed">Pembersihan karang gigi, tambal, cabut, hingga perawatan estetika gigi.</p>
-              <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-cyan-600">Lihat ruangan <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+              <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-600">Lihat ruangan <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </button>
 
             <!-- KIA -->
@@ -408,12 +451,12 @@
 
             <!-- Lab -->
             <button type="button" data-layanan="3" class="item group bg-white rounded-2xl p-6 border border-slate-100 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left w-full cursor-pointer">
-              <div class="w-14 h-14 rounded-2xl bg-cyan-50 text-cyan-600 group-hover:bg-cyan-600 group-hover:text-white flex items-center justify-center transition-colors duration-300">
+              <div class="w-14 h-14 rounded-2xl bg-accent-50 text-accent-600 group-hover:bg-accent-600 group-hover:text-white flex items-center justify-center transition-colors duration-300">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 10a2 2 0 001.800 3h10.400A2 2 0 0019 19l-5-10V3M7.500 15h9"/></svg>
               </div>
               <h3 class="mt-4 text-lg font-semibold text-slate-900">Laboratorium</h3>
               <p class="mt-2 text-sm text-slate-500 leading-relaxed">Cek darah, urin, gula darah, dan pemeriksaan penunjang dengan hasil cepat.</p>
-              <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-cyan-600">Lihat ruangan <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+              <span class="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-600">Lihat ruangan <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </button>
           </div>
           <div class="nav"></div>
@@ -441,7 +484,7 @@
     <!-- ================= AJAKAN JANJI TEMU (ringkas; form ada di popup) ================= -->
     <section id="janji" class="py-10 md:py-16 scroll-mt-16 bg-gradient-to-b from-brand-50 to-slate-50">
       <div class="wrap">
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 to-cyan-600 px-6 py-8 sm:px-10 sm:py-10 text-center md:text-left shadow-xl shadow-brand-600/20" data-aos="fade-up">
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 to-accent-600 px-6 py-8 sm:px-10 sm:py-10 text-center md:text-left shadow-xl shadow-brand-600/20" data-aos="fade-up">
           <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/10"></div>
           <div class="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-white/10"></div>
           <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -505,25 +548,25 @@
     <div class="wrap py-10 md:py-14 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
       <div>
         <a href="#beranda" class="inline-flex items-center gap-2">
-          <span class="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 text-white flex items-center justify-center">
+          <span class="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white flex items-center justify-center">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
           </span>
-          <span class="text-lg font-bold text-white leading-tight" data-nama data-warna="text-brand-400">Klinik<span class="text-brand-400"> Pramata Nani Medika</span></span>
+          <span class="text-lg font-bold text-white leading-tight" data-nama data-warna="text-brand-400"></span>
         </a>
         <p class="mt-4 text-sm text-slate-400 max-w-sm leading-relaxed">Klinik keluarga dengan layanan medis modern, dokter berpengalaman, dan pelayanan yang ramah.</p>
  
         <ul class="mt-5 md:mt-6 space-y-4 text-sm">
           <li class="flex gap-3">
             <svg class="w-5 h-5 text-brand-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span data-isi="alamat">Jl. Sosial No. 18, RT 002/RW 006, Jatiwaringin, Kec. Pondok Gede, Kota Bekasi, Jawa Barat 17411</span>
+            <span data-isi="alamat"></span>
           </li>
           <li class="flex gap-3">
             <svg class="w-5 h-5 text-brand-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 16.920v3a2 2 0 01-2.180 2 19.790 19.790 0 01-8.630-3.070 19.500 19.500 0 01-6-6 19.790 19.790 0 01-3.070-8.670A2 2 0 014.110 2h3a2 2 0 012 1.720c.130.960.360 1.900.700 2.810a2 2 0 01-.450 2.110L8.090 9.910a16 16 0 006 6l1.270-1.270a2 2 0 012.110-.450c.910.340 1.850.570 2.810.700A2 2 0 0122 16.920z"/></svg>
-            <span><a href="#" data-tel="TELEPON_1" class="hover:text-brand-400 transition-colors">0877-9441-8330</a></span>
+            <span><a href="#" data-tel="TELEPON_1" class="hover:text-brand-400 transition-colors"></a></span>
           </li>
           <li class="flex gap-3">
             <svg class="w-5 h-5 text-brand-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            <span data-isi="jam">Buka setiap hari, 08.00 – 20.00</span>
+            <span data-isi="jam"></span>
           </li>
         </ul>
       </div>
@@ -539,7 +582,7 @@
       </div>
     </div>
     <div class="border-t border-white/10 text-center text-xs text-slate-500 py-5">
-      &copy; 2026 <span data-isi="nama">Klinik Pramata Nani Medika</span>. Semua hak dilindungi.
+      &copy; 2026 <span data-isi="nama"></span>. Semua hak dilindungi.
     </div>
   </footer>
  
@@ -557,7 +600,7 @@
 
           <!-- Galeri foto ruangan, bisa digeser (swipe di HP, panah di desktop).
                Kalau belum ada foto diisi, tampil ilustrasi sederhana. -->
-          <div class="relative w-full aspect-[4/3] bg-gradient-to-br from-brand-100 to-cyan-100 overflow-hidden">
+          <div class="relative w-full aspect-[4/3] bg-gradient-to-br from-brand-100 to-accent-100 overflow-hidden">
             <div id="trackFotoLayanan" class="hidden w-full h-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth" style="scrollbar-width:none;"></div>
 
             <div id="fotoLayananKosong" class="w-full h-full flex items-center justify-center text-brand-300">
@@ -584,7 +627,7 @@
             <p id="penjelasanLayanan" class="mt-3 text-sm sm:text-base text-slate-500 leading-relaxed"></p>
 
             <button type="button" data-buka-janji data-tutup-layanan
-                    class="mt-6 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-cyan-600 text-white font-semibold px-7 py-3.5 rounded-full shadow-lg shadow-brand-600/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                    class="mt-6 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-accent-600 text-white font-semibold px-7 py-3.5 rounded-full shadow-lg shadow-brand-600/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
               Buat Janji untuk Layanan Ini
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
@@ -665,7 +708,7 @@
  
               <div class="col-span-2">
                 <button id="btnKirim" type="submit"
-                        class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-cyan-600 text-white font-semibold px-7 py-3.5 rounded-full shadow-lg shadow-brand-600/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:pointer-events-none">
+                        class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-accent-600 text-white font-semibold px-7 py-3.5 rounded-full shadow-lg shadow-brand-600/30 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:pointer-events-none">
                   Kirim Janji Temu
                 </button>
                 <p class="mt-3 text-xs text-center text-slate-400">Data Anda hanya digunakan untuk keperluan janji temu. Bawa KTP dan kartu asuransi bila ada.</p>
@@ -734,6 +777,22 @@
     }
     btn.addEventListener('click', () => toggleMenu());
     menu.querySelectorAll('a, button[data-buka-janji]').forEach(a => a.addEventListener('click', () => toggleMenu(true)));
+
+    // ---- Link menu tanpa tanda "#" di alamat (URL tetap bersih) ----
+    // Klik menu tetap menggulung halaman dengan mulus ke bagian yang dituju,
+    // tapi alamat di browser tidak berubah jadi ...#layanan, ...#beranda, dst.
+    document.addEventListener('click', e => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+      const id = a.getAttribute('href').slice(1);
+      if (!id) return;                       // link "#" kosong (mis. tombol WhatsApp) dibiarkan
+      const tujuan = document.getElementById(id);
+      if (!tujuan) return;
+      e.preventDefault();
+      tujuan.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    // Kalau halaman dibuka dari link lama yang masih ada "#...", bersihkan dari alamat
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
  
     // ---- Terapkan pengaturan dari blok KLINIK di atas ----
     (function () {
@@ -861,8 +920,8 @@
       /* ---------- RENDER: KARTU DOKTER ---------- */
       function kartuDokter(d, i) {
         const w = i % 2 === 0
-          ? { grad: "from-brand-500 to-cyan-500", shadow: "shadow-brand-500/30", badge: "bg-brand-100 text-brand-700", pill: "text-brand-700 bg-brand-50" }
-          : { grad: "from-cyan-500 to-brand-500", shadow: "shadow-cyan-500/30", badge: "bg-cyan-100 text-cyan-700", pill: "text-cyan-700 bg-cyan-50" };
+          ? { grad: "from-brand-500 to-accent-500", shadow: "shadow-brand-500/30", badge: "bg-brand-100 text-brand-700", pill: "text-brand-700 bg-brand-50" }
+          : { grad: "from-accent-500 to-brand-500", shadow: "shadow-accent-500/30", badge: "bg-accent-100 text-accent-700", pill: "text-accent-700 bg-accent-50" };
         const kelasAvatar = `w-16 h-16 shrink-0 rounded-2xl bg-gradient-to-br ${w.grad} text-white flex items-center justify-center text-xl font-bold shadow-lg ${w.shadow}`;
         const avatar = d.foto
           ? `<img src="${esc(d.foto)}" alt="${esc(d.nama)}" loading="lazy" class="w-16 h-16 shrink-0 rounded-2xl object-cover shadow-lg ${w.shadow}" data-inisial="${esc(inisial(d.nama))}" data-kelas="${esc(kelasAvatar)}">`
@@ -913,7 +972,7 @@
           const n = Math.max(0, Math.min(5, Math.round(Number(t.bintang == null ? 5 : t.bintang))));
           const bintang = [0, 1, 2, 3, 4].map(k =>
             `<svg class="w-5 h-5 ${k < n ? "text-amber-400" : "text-slate-200"}" fill="currentColor"><use href="#star"/></svg>`).join("");
-          const warna = i % 2 === 0 ? "bg-brand-100 text-brand-700" : "bg-cyan-100 text-cyan-700";
+          const warna = i % 2 === 0 ? "bg-brand-100 text-brand-700" : "bg-accent-100 text-accent-700";
           return `<figure class="item flex flex-col bg-white rounded-2xl p-6 shadow-md border border-slate-100">
             <div class="flex gap-1" role="img" aria-label="${n} dari 5 bintang">${bintang}</div>
             <blockquote class="mt-3 text-slate-600 leading-relaxed">“${esc(t.isi)}”</blockquote>
@@ -1362,5 +1421,3 @@
   </script>
 </body>
 </html>
- 
-Claude selesai menulis balasan
